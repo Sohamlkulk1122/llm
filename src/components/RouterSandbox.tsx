@@ -1,36 +1,69 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
-  Play,
-  Zap,
-  Cpu,
-  Clock,
+  ArrowRight,
+  Check,
+  CircleGauge,
+  Clock3,
   DollarSign,
-  TrendingDown,
+  Gauge,
   Hash,
-  CheckCircle2,
+  Play,
+  Route,
+  Sparkles,
+  Terminal,
+  Zap,
 } from 'lucide-react';
-import type { LogEntry, RoutingResult } from '@/lib/types';
-import { routePrompt, resultToLog } from '@/lib/router';
+import type { LogEntry, RoutingResult, Tier } from '@/lib/types';
+import { calculateDifficulty, getTier, resultToLog, routePrompt } from '@/lib/router';
 import { SAMPLE_PROMPTS, TIER_COLORS, TIER_LABELS } from '@/lib/constants';
 
 interface Props {
   onNewLog: (log: LogEntry) => void;
 }
 
+const DEFAULT_PROMPT = SAMPLE_PROMPTS[2].text;
+
+const tierNames: Record<Tier, string> = {
+  cheap: 'Cheap Tier',
+  mid: 'Mid Tier',
+  hard: 'Hard Tier',
+};
+
 export default function RouterSandbox({ onNewLog }: Props) {
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [result, setResult] = useState<RoutingResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+
+  const liveEstimate = useMemo(() => {
+    const difficulty = calculateDifficulty(prompt);
+    const tier = getTier(difficulty);
+    const words = prompt.trim() ? prompt.trim().split(/\s+/).length : 0;
+    const complexityKeywords = [
+      'derive', 'analyze', 'architect', 'refactor', 'proof', 'debug', 'optimize',
+      'implement', 'design', 'evaluate', 'compare', 'algorithm', 'distributed',
+      'consensus', 'performance', 'trade-off', 'step-by-step',
+    ];
+    const keywordHits = complexityKeywords.filter((keyword) => prompt.toLowerCase().includes(keyword)).length;
+    const stepHits = ['first', 'then', 'step', 'next', 'finally', 'after that'].filter((word) => prompt.toLowerCase().includes(word)).length;
+
+    return {
+      difficulty,
+      tier,
+      length: Math.min(words / 120, 1) * 0.35,
+      keywords: Math.min(keywordHits / 5, 1) * 0.35,
+      steps: Math.min(stepHits / 3, 1) * 0.15,
+    };
+  }, [prompt]);
 
   const handleRoute = () => {
     if (!prompt.trim()) return;
     setIsRunning(true);
-    setTimeout(() => {
-      const res = routePrompt(prompt);
-      setResult(res);
-      onNewLog(resultToLog(res, prompt));
+    window.setTimeout(() => {
+      const routed = routePrompt(prompt);
+      setResult(routed);
+      onNewLog(resultToLog(routed, prompt));
       setIsRunning(false);
-    }, 600);
+    }, 500);
   };
 
   const handleSample = (text: string) => {
@@ -38,169 +71,132 @@ export default function RouterSandbox({ onNewLog }: Props) {
     setResult(null);
   };
 
-  const difficultyPct = result ? Math.round(result.difficulty * 100) : 0;
-  const scoreColor = result
-    ? result.tier === 'cheap'
-      ? '#22c55e'
-      : result.tier === 'mid'
-        ? '#f59e0b'
-        : '#ef4444'
-    : '#64748b';
+  const scoreColor = TIER_COLORS[liveEstimate.tier];
+  const resultColor = result ? TIER_COLORS[result.tier] : '#46d98d';
 
   return (
-    <div className="space-y-6">
-      {/* Prompt Input Section */}
-      <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Zap className="w-5 h-5 text-cyan-400" />
-          <h2 className="text-lg font-semibold text-slate-100">Prompt Tester</h2>
-        </div>
+    <div>
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(330px,0.8fr)_minmax(520px,1.4fr)] gap-5 xl:gap-6 items-stretch">
+        <section className="panel flex flex-col p-5 sm:p-6">
+          <div className="section-heading">
+            <div className="icon-tile icon-tile-amber"><Zap className="h-4 w-4" /></div>
+            <p className="eyebrow">Prompt tester</p>
+          </div>
 
-        <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Type or paste a prompt to route..."
-          className="w-full h-32 px-4 py-3 rounded-xl bg-slate-950/60 border border-slate-700/50 text-slate-100 placeholder-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all font-mono text-sm leading-relaxed"
-        />
+          <textarea
+            value={prompt}
+            onChange={(event) => {
+              setPrompt(event.target.value);
+              setResult(null);
+            }}
+            placeholder="Ask anything..."
+            className="prompt-input mt-5"
+            spellCheck={false}
+          />
 
-        <div className="flex flex-wrap gap-2 mt-4">
-          {SAMPLE_PROMPTS.map((s) => (
-            <button
-              key={s.label}
-              onClick={() => handleSample(s.text)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800/60 border border-slate-700/50 text-slate-300 hover:bg-slate-700/60 hover:text-cyan-300 hover:border-cyan-500/30 transition-all"
-            >
-              {s.label}
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={handleRoute}
-          disabled={!prompt.trim() || isRunning}
-          className="mt-4 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold hover:from-cyan-400 hover:to-blue-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-cyan-500/20"
-        >
-          <Play className="w-5 h-5" />
-          {isRunning ? 'Routing...' : 'Test Route'}
-        </button>
-      </div>
-
-      {/* Results Section */}
-      {result && (
-        <div className="space-y-6 animate-in fade-in duration-500">
-          {/* Difficulty Gauge + Model Badge */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Difficulty Score Bar */}
-            <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingDown className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">
-                  Difficulty Score
-                </h3>
-              </div>
-              <div className="flex items-end gap-2 mb-4">
-                <span className="text-4xl font-bold" style={{ color: scoreColor }}>
-                  {result.difficulty.toFixed(2)}
-                </span>
-                <span className="text-sm text-slate-400 mb-1">
-                  {result.tier === 'cheap'
-                    ? 'Low Complexity'
-                    : result.tier === 'mid'
-                      ? 'Medium Complexity'
-                      : 'High Complexity'}
-                </span>
-              </div>
-              <div className="relative w-full h-4 rounded-full bg-slate-800 overflow-hidden">
-                <div
-                  className="absolute top-0 left-0 h-full rounded-full transition-all duration-700 ease-out"
-                  style={{
-                    width: `${difficultyPct}%`,
-                    background: `linear-gradient(90deg, #22c55e 0%, #f59e0b 50%, #ef4444 100%)`,
-                  }}
-                />
-                <div className="absolute top-0 left-[35%] h-full w-px bg-slate-600/50" />
-                <div className="absolute top-0 left-[70%] h-full w-px bg-slate-600/50" />
-              </div>
-              <div className="flex justify-between mt-2 text-[10px] text-slate-500">
-                <span>0.00</span>
-                <span>0.35</span>
-                <span>0.70</span>
-                <span>1.00</span>
-              </div>
-            </div>
-
-            {/* Model Tier Badge */}
-            <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Cpu className="w-5 h-5 text-cyan-400" />
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">
-                  Routed Model
-                </h3>
-              </div>
-              <div
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold mb-3"
-                style={{
-                  backgroundColor: `${TIER_COLORS[result.tier]}20`,
-                  color: TIER_COLORS[result.tier],
-                  border: `1px solid ${TIER_COLORS[result.tier]}40`,
-                }}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {SAMPLE_PROMPTS.map((sample) => (
+              <button
+                key={sample.label}
+                type="button"
+                onClick={() => handleSample(sample.text)}
+                className={`sample-chip ${prompt === sample.text ? 'sample-chip-active' : ''}`}
               >
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TIER_COLORS[result.tier] }} />
-                {TIER_LABELS[result.tier]}
-              </div>
-              <p className="text-2xl font-bold text-slate-100">{result.model.name}</p>
-              <p className="text-sm text-slate-400 mt-1">
-                ${result.model.costPer1kPrompt.toFixed(5)}/1K prompt · ${result.model.costPer1kCompletion.toFixed(3)}/1K completion
-              </p>
+                {sample.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="estimate-card mt-5">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-slate-400">Live estimate</span>
+              <span className="font-mono text-sm font-semibold" style={{ color: scoreColor }}>
+                {liveEstimate.difficulty.toFixed(2)} · {tierNames[liveEstimate.tier]}
+              </span>
+            </div>
+            <div className="mt-3 grid grid-cols-3 gap-3 font-mono text-[11px] text-slate-500">
+              <Estimate label="len" value={liveEstimate.length} />
+              <Estimate label="kw" value={liveEstimate.keywords} />
+              <Estimate label="steps" value={liveEstimate.steps} />
+            </div>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-800">
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${liveEstimate.difficulty * 100}%`, backgroundColor: scoreColor }} />
             </div>
           </div>
 
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <MetricCard icon={<Hash className="w-4 h-4" />} label="Prompt Tokens" value={result.promptTokens.toString()} color="text-slate-200" />
-            <MetricCard icon={<Hash className="w-4 h-4" />} label="Completion Tokens" value={result.completionTokens.toString()} color="text-slate-200" />
-            <MetricCard icon={<DollarSign className="w-4 h-4" />} label="Routed Cost" value={`$${result.actualCost.toFixed(4)}`} color="text-green-400" />
-            <MetricCard icon={<DollarSign className="w-4 h-4" />} label="Baseline Cost" value={`$${result.baselineCost.toFixed(4)}`} color="text-red-400" />
-            <MetricCard icon={<TrendingDown className="w-4 h-4" />} label="Net Savings" value={`$${result.savings.toFixed(4)} (${result.savingsPct.toFixed(1)}%)`} color="text-green-400" />
-            <MetricCard icon={<Clock className="w-4 h-4" />} label="Latency" value={`${result.latencyMs}ms`} color="text-amber-400" />
-          </div>
+          <button
+            type="button"
+            onClick={handleRoute}
+            disabled={!prompt.trim() || isRunning}
+            className="primary-action mt-5"
+          >
+            {isRunning ? <CircleGauge className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+            {isRunning ? 'Routing prompt' : 'Test route'}
+            {!isRunning && <ArrowRight className="ml-auto h-4 w-4" />}
+          </button>
+        </section>
 
-          {/* Simulated Output */}
-          <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <CheckCircle2 className="w-5 h-5 text-cyan-400" />
-              <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">
-                Simulated Output
-              </h3>
+        <section className={`panel result-panel min-h-[560px] ${result ? 'result-panel-ready' : ''}`}>
+          {result ? (
+            <RoutedResult result={result} color={resultColor} />
+          ) : (
+            <div className="empty-state">
+              <div className="empty-glyph"><Gauge className="h-7 w-7" /></div>
+              <p className="text-lg font-medium text-slate-300">Run a prompt to see where it gets routed.</p>
+              <p className="mt-2 max-w-xs text-center text-sm leading-6 text-slate-500">The selected model, cost, and savings will appear here.</p>
+              <div className="mt-6 flex items-center gap-2 text-xs text-slate-600"><Route className="h-3.5 w-3.5" /> Awaiting input</div>
             </div>
-            <pre className="whitespace-pre-wrap text-sm text-slate-300 font-mono leading-relaxed bg-slate-950/40 rounded-xl p-4 border border-slate-800/50">
-              {result.simulatedOutput}
-            </pre>
-          </div>
-        </div>
-      )}
+          )}
+        </section>
+      </div>
     </div>
   );
 }
 
-function MetricCard({
-  icon,
-  label,
-  value,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  color: string;
-}) {
+function Estimate({ label, value }: { label: string; value: number }) {
+  return <span><span className="text-slate-600">{label} </span>{value.toFixed(2)}</span>;
+}
+
+function RoutedResult({ result, color }: { result: RoutingResult; color: string }) {
   return (
-    <div className="rounded-xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-4">
-      <div className="flex items-center gap-1.5 text-slate-500 mb-2">
-        {icon}
-        <span className="text-[10px] uppercase tracking-wide font-medium">{label}</span>
+    <div className="h-full p-5 sm:p-7">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-800/80 pb-5">
+        <div>
+          <p className="eyebrow"><Route className="h-3.5 w-3.5" /> Decision made</p>
+          <h3 className="mt-1 text-2xl font-semibold tracking-tight text-slate-100">Routed to {result.model.name}</h3>
+          <p className="mt-1 text-sm text-slate-500">The smallest model that can comfortably handle this prompt.</p>
+        </div>
+        <div className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ color, backgroundColor: `${color}16`, border: `1px solid ${color}35` }}>
+          {TIER_LABELS[result.tier]}
+        </div>
       </div>
-      <p className={`text-lg font-bold ${color}`}>{value}</p>
+
+      <div className="mt-6 grid grid-cols-[1fr_auto] items-center gap-5">
+        <div>
+          <div className="flex items-center justify-between text-xs text-slate-500"><span>Difficulty</span><span className="font-mono" style={{ color }}>{result.difficulty.toFixed(2)}</span></div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-800"><div className="h-full rounded-full" style={{ width: `${result.difficulty * 100}%`, backgroundColor: color }} /></div>
+          <div className="mt-2 flex justify-between text-[10px] uppercase tracking-wider text-slate-600"><span>simple</span><span>complex</span></div>
+        </div>
+        <div className="text-right"><p className="text-xs text-slate-500">Savings</p><p className="mt-1 text-2xl font-semibold text-emerald-300">{result.savingsPct.toFixed(0)}%</p></div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <ResultMetric icon={<DollarSign />} label="Routed cost" value={`$${result.actualCost.toFixed(4)}`} emphasis="green" />
+        <ResultMetric icon={<DollarSign />} label="Baseline" value={`$${result.baselineCost.toFixed(4)}`} />
+        <ResultMetric icon={<Clock3 />} label="Latency" value={`${result.latencyMs}ms`} />
+        <ResultMetric icon={<Hash />} label="Tokens" value={`${result.promptTokens + result.completionTokens}`} />
+      </div>
+
+      <div className="output-card mt-6">
+        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3"><span className="eyebrow"><Terminal className="h-3.5 w-3.5" /> Preview output</span><span className="flex items-center gap-1.5 text-[11px] text-emerald-300/70"><Check className="h-3.5 w-3.5" /> Simulated</span></div>
+        <pre className="mt-4 max-h-52 overflow-auto whitespace-pre-wrap font-mono text-xs leading-6 text-slate-400">{result.simulatedOutput}</pre>
+      </div>
+
+      <div className="mt-5 flex items-center gap-2 text-xs text-slate-500"><Sparkles className="h-3.5 w-3.5 text-amber-300" /> Routing decision completed in the local scoring engine.</div>
     </div>
   );
+}
+
+function ResultMetric({ icon, label, value, emphasis }: { icon: React.ReactNode; label: string; value: string; emphasis?: 'green' }) {
+  return <div className="metric-tile"><div className="flex items-center gap-1.5 text-slate-600">{icon}<span>{label}</span></div><p className={`mt-2 font-mono text-sm ${emphasis === 'green' ? 'text-emerald-300' : 'text-slate-200'}`}>{value}</p></div>;
 }

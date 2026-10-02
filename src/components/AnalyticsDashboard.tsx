@@ -120,7 +120,7 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Summary Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard
@@ -149,15 +149,15 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
           icon={<Clock className="w-5 h-5" />}
           label="Avg Latency Delta"
           value={`${Math.round(stats.avgLatency)}ms`}
-          color="text-purple-400"
-          bgColor="bg-purple-500/10"
+          color="text-sky-300"
+          bgColor="bg-sky-400/10"
         />
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Chart */}
-        <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6">
+        <div className="panel p-5">
           <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-4">
             Model Tier Distribution
           </h3>
@@ -193,7 +193,7 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
         </div>
 
         {/* Cumulative Cost Line Chart */}
-        <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6">
+        <div className="panel p-5">
           <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-4">
             Cost Savings Comparison (Cumulative)
           </h3>
@@ -234,7 +234,7 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
       </div>
 
       {/* Histogram */}
-      <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6">
+      <div className="panel p-5">
         <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-4">
           Difficulty Score Histogram
         </h3>
@@ -263,7 +263,7 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
       </div>
 
       {/* Query Logs Table */}
-      <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-6">
+      <div className="panel p-5">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">
             Recent Query Logs
@@ -381,7 +381,7 @@ function SummaryCard({
   subtitle?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-700/50 bg-slate-900/50 backdrop-blur-xl p-5">
+    <div className="panel p-5">
       <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${bgColor} ${color} mb-3`}>
         {icon}
       </div>
