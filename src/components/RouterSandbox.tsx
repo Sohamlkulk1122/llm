@@ -72,7 +72,7 @@ export default function RouterSandbox({ onNewLog }: Props) {
   };
 
   const scoreColor = TIER_COLORS[liveEstimate.tier];
-  const resultColor = result ? TIER_COLORS[result.tier] : '#46d98d';
+  const resultColor = result ? TIER_COLORS[result.tier] : '#94a3b8';
 
   return (
     <div>
@@ -177,18 +177,18 @@ function RoutedResult({ result, color }: { result: RoutingResult; color: string 
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-800"><div className="h-full rounded-full" style={{ width: `${result.difficulty * 100}%`, backgroundColor: color }} /></div>
           <div className="mt-2 flex justify-between text-[10px] uppercase tracking-wider text-slate-600"><span>simple</span><span>complex</span></div>
         </div>
-        <div className="text-right"><p className="text-xs text-slate-500">Savings</p><p className="mt-1 text-2xl font-semibold text-emerald-300">{result.savingsPct.toFixed(0)}%</p></div>
+        <div className="text-right"><p className="text-xs text-slate-500">Savings</p><p className="mt-1 text-2xl font-semibold text-slate-300">{result.savingsPct.toFixed(0)}%</p></div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <ResultMetric icon={<DollarSign />} label="Routed cost" value={`$${result.actualCost.toFixed(4)}`} emphasis="green" />
+        <ResultMetric icon={<DollarSign />} label="Routed cost" value={`${result.actualCost.toFixed(4)}`} emphasis="grey" />
         <ResultMetric icon={<DollarSign />} label="Baseline" value={`$${result.baselineCost.toFixed(4)}`} />
         <ResultMetric icon={<Clock3 />} label="Latency" value={`${result.latencyMs}ms`} />
         <ResultMetric icon={<Hash />} label="Tokens" value={`${result.promptTokens + result.completionTokens}`} />
       </div>
 
       <div className="output-card mt-6">
-        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3"><span className="eyebrow"><Terminal className="h-3.5 w-3.5" /> Preview output</span><span className="flex items-center gap-1.5 text-[11px] text-emerald-300/70"><Check className="h-3.5 w-3.5" /> Simulated</span></div>
+        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3"><span className="eyebrow"><Terminal className="h-3.5 w-3.5" /> Preview output</span><span className="flex items-center gap-1.5 text-[11px] text-slate-400/70"><Check className="h-3.5 w-3.5" /> Simulated</span></div>
         <pre className="mt-4 max-h-52 overflow-auto whitespace-pre-wrap font-mono text-xs leading-6 text-slate-400">{result.simulatedOutput}</pre>
       </div>
 
@@ -197,6 +197,6 @@ function RoutedResult({ result, color }: { result: RoutingResult; color: string 
   );
 }
 
-function ResultMetric({ icon, label, value, emphasis }: { icon: React.ReactNode; label: string; value: string; emphasis?: 'green' }) {
-  return <div className="metric-tile"><div className="flex items-center gap-1.5 text-slate-600">{icon}<span>{label}</span></div><p className={`mt-2 font-mono text-sm ${emphasis === 'green' ? 'text-emerald-300' : 'text-slate-200'}`}>{value}</p></div>;
+function ResultMetric({ icon, label, value, emphasis }: { icon: React.ReactNode; label: string; value: string; emphasis?: 'grey' }) {
+  return <div className="metric-tile"><div className="flex items-center gap-1.5 text-slate-600">{icon}<span>{label}</span></div><p className={`mt-2 font-mono text-sm ${emphasis === 'grey' ? 'text-slate-300' : 'text-slate-200'}`}>{value}</p></div>;
 }

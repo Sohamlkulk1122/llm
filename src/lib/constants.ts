@@ -33,7 +33,7 @@ export const TIER_LABELS: Record<Tier, string> = {
 };
 
 export const TIER_COLORS: Record<Tier, string> = {
-  cheap: '#22c55e',
+  cheap: '#94a3b8',
   mid: '#f59e0b',
   hard: '#ef4444',
 };

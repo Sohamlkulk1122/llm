@@ -134,14 +134,14 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
           icon={<DollarSign className="w-5 h-5" />}
           label="Total Savings"
           value={`$${stats.totalSavings.toFixed(4)}`}
-          color="text-green-400"
-          bgColor="bg-green-500/10"
+          color="text-slate-300"
+          bgColor="bg-slate-500/10"
         />
         <SummaryCard
           icon={<Percent className="w-5 h-5" />}
           label="Avg Cost Reduction"
           value={`${stats.avgReduction.toFixed(1)}%`}
-          color={stats.avgReduction > 60 ? 'text-green-400' : 'text-amber-400'}
+          color={stats.avgReduction > 60 ? 'text-slate-300' : 'text-amber-400'}
           bgColor="bg-amber-500/10"
           subtitle={stats.avgReduction > 60 ? 'Above 60% target' : 'Below 60% target'}
         />
@@ -224,7 +224,7 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
                 type="monotone"
                 dataKey="router"
                 name="Smart Router Cost"
-                stroke="#22c55e"
+                stroke="#94a3b8"
                 strokeWidth={2}
                 dot={false}
               />
@@ -254,7 +254,7 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
             <Bar dataKey="count" radius={[6, 6, 0, 0]}>
               {histogramData.map((entry, i) => {
                 const mid = (entry.min + entry.max) / 2;
-                const color = mid < 0.35 ? '#22c55e' : mid < 0.7 ? '#f59e0b' : '#ef4444';
+                const color = mid < 0.35 ? '#94a3b8' : mid < 0.7 ? '#f59e0b' : '#ef4444';
                 return <Cell key={i} fill={color} />;
               })}
             </Bar>
@@ -345,13 +345,13 @@ export default function AnalyticsDashboard({ logs, onClearLogs }: Props) {
                       <td className="py-3 pr-4 text-slate-300 whitespace-nowrap text-xs">
                         {log.modelName}
                       </td>
-                      <td className="py-3 pr-4 text-right text-green-400 font-mono text-xs">
+                      <td className="py-3 pr-4 text-right text-slate-300 font-mono text-xs">
                         ${log.actualCost.toFixed(4)}
                       </td>
                       <td className="py-3 pr-4 text-right text-red-400 font-mono text-xs">
                         ${log.baselineCost.toFixed(4)}
                       </td>
-                      <td className="py-3 text-right text-green-400 font-mono text-xs font-semibold">
+                      <td className="py-3 text-right text-slate-300 font-mono text-xs font-semibold">
                         ${log.savings.toFixed(4)}
                       </td>
                     </tr>
