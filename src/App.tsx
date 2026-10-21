@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BarChart3, FlaskConical, GitBranch, SlidersHorizontal } from 'lucide-react';
+import { BarChart3, FlaskConical, SlidersHorizontal } from 'lucide-react';
 import type { LogEntry } from '@/lib/types';
 import { generateMockLogs } from '@/lib/mockData';
 import RouterSandbox from '@/components/RouterSandbox';
@@ -18,10 +18,9 @@ function App() {
 
       <header className="site-header">
         <div className="brand-lockup">
-          <div className="brand-mark"><GitBranch className="h-5 w-5" /></div>
           <div>
-            <h1 className="brand-name">Cost-Aware LLM Router</h1>
-            <p className="brand-tagline">Send each prompt to the cheapest model that can handle it.</p>
+            <h1 className="brand-name">Prompt Router</h1>
+            <p className="brand-tagline">Choose the right model for each prompt.</p>
           </div>
         </div>
 
